@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メモ帳</title>
+    <!-- Materialize CSS CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        #notepad {
+            width: 90%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            min-height: 300px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .btn-custom {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="notepad" class="container">
+        <h3 class="center-align">メモ帳</h3>
+        <div class="input-field">
+            <textarea id="noteArea" class="materialize-textarea" placeholder="ここにメモを書いてください..."></textarea>
+        </div>
+        <button id="saveButton" class="btn waves-effect waves-light btn-custom">保存</button>
+        <button id="clearButton" class="btn red lighten-1 waves-effect waves-light btn-custom">クリア</button>
+        <button id="closeButton" class="btn grey darken-1 waves-effect waves-light btn-custom">閉じる</button>
+    </div>
+
+    <!-- Materialize JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        // HTML要素の取得
+        const noteArea = document.getElementById('noteArea');
+        const saveButton = document.getElementById('saveButton');
+        const clearButton = document.getElementById('clearButton');
+        const closeButton = document.getElementById('closeButton');
+
+        let isSaved = true;
+
+        // ページ読み込み時にローカルストレージからメモを読み込む
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedNote = localStorage.getItem('note');
+            if (savedNote) {
+                noteArea.value = savedNote;
+                isSaved = true;
+            }
+        });
+
+        // 保存ボタンがクリックされたときにメモをローカルストレージに保存する
+        saveButton.addEventListener('click', function() {
+            const note = noteArea.value;
+            const blob = new Blob([note], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '無題のメモ.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            isSaved = true;
+        });
+
+        // クリアボタンがクリックされたときにメモをクリアする
+        clearButton.addEventListener('click', function() {
+            noteArea.value = '';
+            localStorage.removeItem('note');
+            isSaved = true;
+            M.toast({html: 'メモがクリアされました！'});
+        });
+
+        // テキストエリアが変更されたときに保存フラグを更新する
+        noteArea.addEventListener('input', function() {
+            isSaved = false;
+        });
+
+        // 閉じるボタンがクリックされたときに保存確認を行う
+        closeButton.addEventListener('click', function() {
+            if (!isSaved) {
+                const userConfirmed = confirm('保存されていないメモがあります。本当に閉じますか？');
+                if (userConfirmed) {
+                    closeWindow();
+                }
+            } else {
+                closeWindow();
+            }
+        });
+
+        // ウィンドウを閉じる関数
+        function closeWindow() {
+            const confirmClose = confirm('保存しましたか？');
+            if (confirmClose) {
+                window.close();
+            }
+        }
+
+        // ページが閉じられようとする時に警告を表示
+        window.addEventListener('beforeunload', function(event) {
+            if (!isSaved) {
+                const confirmationMessage = '保存されていないメモがあります。本当に閉じますか？';
+                event.returnValue = confirmationMessage; // 標準準拠のブラウザ用
+                return confirmationMessage; // 一部のブラウザ用
+            }
+        });
+    </script>
+</body>
+</html>
