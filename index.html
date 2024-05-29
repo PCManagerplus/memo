@@ -34,6 +34,9 @@
             width: 100%;
             margin-top: 10px;
         }
+        #fileInput {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -44,7 +47,9 @@
         </div>
         <button id="saveButton" class="btn waves-effect waves-light btn-custom">保存</button>
         <button id="clearButton" class="btn red lighten-1 waves-effect waves-light btn-custom">クリア</button>
+        <button id="openButton" class="btn green lighten-1 waves-effect waves-light btn-custom">ファイルから開く</button>
         <button id="closeButton" class="btn grey darken-1 waves-effect waves-light btn-custom">閉じる</button>
+        <input type="file" id="fileInput" accept=".txt">
     </div>
 
     <!-- Materialize JS and dependencies -->
@@ -55,6 +60,8 @@
         const saveButton = document.getElementById('saveButton');
         const clearButton = document.getElementById('clearButton');
         const closeButton = document.getElementById('closeButton');
+        const openButton = document.getElementById('openButton');
+        const fileInput = document.getElementById('fileInput');
 
         let isSaved = true;
 
@@ -93,6 +100,24 @@
         // テキストエリアが変更されたときに保存フラグを更新する
         noteArea.addEventListener('input', function() {
             isSaved = false;
+        });
+
+        // ファイルから開くボタンがクリックされたときにファイル選択をトリガーする
+        openButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        // ファイルが選択されたときにその内容をテキストエリアに読み込む
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    noteArea.value = e.target.result;
+                    isSaved = true;
+                }
+                reader.readAsText(file);
+            }
         });
 
         // 閉じるボタンがクリックされたときに保存確認を行う
